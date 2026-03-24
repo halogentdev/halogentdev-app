@@ -1,140 +1,307 @@
-# Halogent CLI
+# Halogent — Private AI Agent Control Plane for Solana
 
-[![npm version](https://img.shields.io/npm/v/halogent.svg)](https://www.npmjs.com/package/halogent)
+**Version:** v1.4.0  
+**Website:** https://halogent.tech  
+**npm:** https://npmjs.com/package/halogent  
+**X:** https://x.com/halogent_tech  
+**GitHub org:** https://github.com/halogentdev  
+**License:** MIT
 
-Private AI Agent Control Plane for Solana - CLI
+---
 
-## Installation
+## Banner / Header
+
+[![npm version](https://img.shields.io/npm/v/halogent?color=blue&style=flat-square)](https://npmjs.com/package/halogent)  
+[![website](https://img.shields.io/website?url=https%3A%2F%2Fhalogent.tech&style=flat-square)](https://halogent.tech)  
+[![X](https://img.shields.io/badge/X-%40halogent__tech-blue?style=flat-square)](https://x.com/halogent_tech)  
+[![license](https://img.shields.io/badge/license-MIT-yellow?style=flat-square)](LICENSE)
+
+---
+
+## Project Overview
+
+Halogent is a private AI agent control plane built for Solana operators and builders.
+
+Key traits:
+- self-hosted runtime (VPS/Docker/local)
+- playground for real provider execution (OpenAI/Anthropic/Gemini)
+- privacy-first mode (zero telemetry, local memory, user-owned secrets)
+- CLI v1.4.0 for agent lifecycle and control
+- REST API v1 for programmatic orchestration
+- PostgreSQL backend with Drizzle ORM
+- React + TypeScript frontend (Vite, Tailwind, shadcn/ui)
+- Express.js API server (TypeScript)
+
+---
+
+## Architecture (ASCII)
+
+```
++--------------------------+                     +--------------------+
+|  Halogent Control Plane  |                     |  User Agent Host   |
+|  (dashboard + REST API)  |<---- HTTPS/WS ---->|  (VPS/Docker/Local)|
+|  - React UI              |                     |  - Runtime process |
+|  - Express backend       |                     |  - agent runtime   |
+|  - PostgreSQL (Drizzle)  |                     |  - local config    |
++--------------------------+                     +--------------------+
+            ^
+            |
+        CLI + REST API
+        (halogent)
+            |
+            v
++--------------------------+
+|  Developer / Operator    |
++--------------------------+
+```
+
+---
+
+## Quick Start
+
+```bash
+npm install -g halogent
+halogent auth set-key <your-api-key>
+halogent agent list
+```
+
+---
+
+## Tech Stack
+
+- Frontend: React + TypeScript + Vite + Tailwind CSS + shadcn/ui
+- Backend: Express.js + TypeScript
+- Auth: Privy (wallet + email login)
+- Database: PostgreSQL (Drizzle ORM)
+- CLI: Node.js (npm package `halogent`)
+
+---
+
+## CLI v1.4.0
+
+### install
 
 ```bash
 npm install -g halogent
 ```
 
-## Overview
-
-Halogent is a command‑line interface for interacting with the Halogent control plane. It
-allows you to authenticate, manage agents, inspect a dashboard, and integrate with
-systemd/docker.
-
-## Full‑Stack Dashboard
-
-This repository also contains a full-stack web application used as the
-Halogent Dashboard. The frontend is built with React 18, TypeScript, Vite,
-TailwindCSS and shadcn/ui, with routing handled by wouter and data fetched
-via TanStack React Query. The backend is an Express.js server in TypeScript
-using Drizzle ORM (PostgreSQL) and Privy passwordless email authentication
-with session support. Development environment variables are outlined in
-`.env.example`.
-
-### Development
+or
 
 ```bash
-# install project dependencies
-npm install
+curl -sSL https://halogent.tech/cli/halogent.js -o /usr/local/bin/halogent
+chmod +x /usr/local/bin/halogent
+```
 
-# run server in dev mode (uses ts-node-dev + Vite middleware)
+### key commands
+
+```bash
+halogent auth set-key <key>
+halogent auth login
+halogent auth status
+```
+
+### agent commands
+
+```bash
+halogent agent list
+halogent agent pull <id>
+halogent agent start <id>
+halogent agent stop <id>
+halogent agent restart <id>
+halogent agent status <id>
+halogent agent logs <id>
+```
+
+### system commands
+
+```bash
+halogent dashboard
+halogent config set-endpoint <url>
+halogent service install <id>
+```
+
+---
+
+## Full CLI Reference Table
+
+| Command | Description |
+|---------|-------------|
+| `halogent auth set-key <key>` | Provide API key for CLI and server auth |
+| `halogent auth login` | OAuth wallet/email login via Privy |
+| `halogent auth status` | Display current auth state |
+| `halogent agent list` | List registered agents |
+| `halogent agent pull <id>` | Download agent package/manifest |
+| `halogent agent start <id>` | Start agent runtime process |
+| `halogent agent stop <id>` | Stop agent runtime |
+| `halogent agent restart <id>` | Restart agent runtime |
+| `halogent agent status <id>` | Agent runtime health and status |
+| `halogent agent logs <id>` | Tail/log output for agent |
+| `halogent dashboard` | Open control plane UI |
+| `halogent config set-endpoint <url>` | Set control plane API endpoint |
+| `halogent service install <id>` | Install as system service |
+
+---
+
+## REST API v1 Reference Table
+
+| Endpoint | Method | Auth | Description |
+|----------|--------|------|-------------|
+| `/api/v1/agents` | GET | `X-Halogent-Key` | List agents |
+| `/api/v1/agent/:id/config` | GET | `X-Halogent-Key` | Agent config |
+| `/api/v1/agent/:id/status` | GET | `X-Halogent-Key` | Agent runtime status |
+| `/api/v1/agent/:id/logs` | GET | `X-Halogent-Key` | Agent logs |
+| `/api/v1/agent/:id/start` | POST | `X-Halogent-Key` | Start agent |
+| `/api/v1/agent/:id/stop` | POST | `X-Halogent-Key` | Stop agent |
+| `/api/v1/agent/:id/restart` | POST | `X-Halogent-Key` | Restart agent |
+| `/api/v1/dashboard` | GET | `X-Halogent-Key` | Dashboard summary |
+
+---
+
+## Playground: Real AI Execution (API-key-in, zero server-storage)
+
+- Providers:
+  - OpenAI: `gpt-4o`, `o1`, `o3`
+  - Anthropic: `claude-3.5-sonnet`, `claude-3-opus`
+  - Google Gemini
+- Required: user provides provider API key at UI prompt
+- Key is used client-side or runtime call; not persisted by control plane
+
+Typical session:
+
+```bash
+export HALOGENT_PROVIDER=openai
+export HALOGENT_KEY=<your-openai-key>
+
+curl -X POST https://your-server/api/v1/agent/<id>/start \
+  -H "X-Halogent-Key: <control-plane-key>"
+```
+
+Browser playground workflow:
+- connect wallet/email via Privy
+- choose provider
+- paste API key in session modal
+- run inference
+
+---
+
+## Self-hosting Deployment
+
+### 1. VPS
+
+```bash
+git clone https://github.com/halogentdev/halogentdev-app.git
+cd halogentdev-app
+npm ci
+npm run build
+npm run start
+```
+
+- Ensure PostgreSQL accessible
+- Configure env:
+  - `DATABASE_URL`
+  - `PRIVY_API_KEY`
+  - `HALOGENT_BASE_URL`
+  - `PORT=3000`
+
+### 2. Docker
+
+```bash
+docker build -t halogent:1.4.0 .
+docker run -d \
+  -p 3000:3000 \
+  -e DATABASE_URL=postgres://user:pass@db:5432/halogent \
+  -e PRIVY_API_KEY="$PRIVY_API_KEY" \
+  -e HALOGENT_BASE_URL="https://your-host" \
+  --name halogent halogent:1.4.0
+```
+
+### 3. Local (dev)
+
+```bash
+cp .env.example .env
+npm ci
 npm run dev
 ```
 
-Frontend code lives under `client/src`, backend under `server/`, shared types
-in `shared/schema.ts`.
+Local CLI endpoint:
 
-```
-HALOGENT
-  Private Agent Control Plane
-  https://halogent.tech
+```bash
+halogent config set-endpoint http://localhost:3000
 ```
 
-## Commands
+---
 
-| Command                                | Description                                |
-|----------------------------------------|--------------------------------------------|
-| `auth set-key <key>`                   | Store API key (prefix `hlg_live_`)         |
-| `init`                                 | Initialize workspace & verify connection   |
-| `agent pull <id>`                      | Fetch agent configuration                  |
-| `agent start <id>`                     | Start an agent                             |
-| `agent stop <id>`                      | Stop an agent                              |
-| `agent status <id>`                    | Query agent status                         |
-| `agent dev <id>`                       | Start agent in verbose/dev mode            |
-| `service install <id>`                 | Print systemd unit for auto‑start          |
-| `config set-endpoint <url>`            | Override default API endpoint              |
-| `dashboard`                            | Render terminal dashboard                  |
-| `--version`                            | Show version and commands                  |
+## Privacy-first Architecture
 
-## Architecture
+- Zero telemetry. no analytics, no event forwarding.
+- Agent user secrets are never written to server DB.
+- Runtime stores:
+  - minimal agent metadata
+  - status, config
+  - logs under opt-in retention
+- Runtime does not store API keys for LLM providers across sessions.
+- Local memory mode is optional (on-agent), user-controlled.
+- User data (wallet, email) is handled by Privy; not captured in raw form by Halogent.
 
-```
-+----------------+          +-------------------------+
-|   User Server  | <------> |  Halogent Control Plane |
-|  (CLI / agent) |          |   https://halogent.tech|
-+----------------+          +-------------------------+
-```
+---
 
-Agents run on user machines (Solana bots) and communicate with the central control
-plane for configuration, heartbeats, and commands.
+## Install script
 
-## Deployment Examples
+- `curl -sSL https://halogent.tech/install.sh | bash`
+- script installs CLI and config defaults for self-hosted server
 
-### Docker
+## CLI binary distribution
 
-```Dockerfile
-FROM node:20
-RUN npm install -g halogent
-ENTRYPOINT ["halogent"]
+- Served at `https://halogent.tech/cli/halogent.js`
+- Use with:
+
+```bash
+curl -sSL https://halogent.tech/cli/halogent.js -o /usr/local/bin/halogent
+chmod +x /usr/local/bin/halogent
 ```
 
-### systemd
+---
 
-Use `halogent service install <id>` to generate a unit file, e.g.:
+## Contributing
 
-```
-[Unit]
-Description=Halogent Agent my-agent
-After=network.target
+1. Fork repository
+2. Create branch `feature/<name>` or `fix/<name>`
+3. Write code and tests
+4. Validate:
+   ```bash
+   npm ci
+   npm test
+   npm run lint
+   ```
+5. Open PR to `main`
+6. Add changelog entry in `docs/changelog.md` if behavior changes
+7. Follow repository coding style (Prettier+ESLint)
 
-[Service]
-Type=simple
-ExecStart=/usr/bin/halogent agent start my-agent
-Restart=on-failure
+---
 
-[Install]
-WantedBy=multi-user.target
-```
+## Changelog
 
-Enable with `systemctl enable --now <file>`.
+### v1.4.0
+- Added CLI `agent logs` and `agent status` commands.
+- Added dashboard path `GET /api/v1/dashboard`.
+- Added auth status command and better session handling.
+- Zero telemetry, local memory and provider API key privacy updates.
 
-### docker-compose
+### v1.3.0
+- Introduced self-hosted playground with OpenAI/Anthropic/Gemini provider integration.
+- Added `service install` and `config set-endpoint` commands.
 
-```yaml
-version: '3'
-services:
-  agent:
-    image: node:20
-    command: halogent agent start my-agent
-    restart: always
-```
-
-## Config & Privacy
-
-Configuration is stored in `~/.halogent/config.json`: 
-
-```json
-{ "apiKey": "hlg_live_...", "endpoint": "https://halogent.tech" }
-```
-
-Only the API key and optional custom endpoint are saved locally. No agent data
-leaves your machine except when you explicitly pull or start agents.
-
-## Requirements
-
-- Node.js 18+ (built-in modules only)
-- Network access to `https://halogent.tech`
-
-## Links
-
-- Website: https://halogent.tech
-- Twitter/X: https://x.com/halogent_tech
+---
 
 ## License
 
-MIT © 2026 Halogent
+MIT License.  
+Full text in `LICENSE`.  
+Copyright (c) 2026 Halogent, Inc.
+
+---
+
+## Notes
+
+- This README is designed for production usage, operator installation, API integration, and secure self-hosted deployment.
+- Keep control plane endpoint private and use strong `X-Halogent-Key` management in automation scripts.

@@ -1,16 +1,18 @@
 # Changelog
 
-## v1.3.1
-- CLI bug fixes and dashboard enhancements
+## v1.4.0
+
+- Added CLI `agent logs` and `agent status` commands.
+- Added dashboard path `GET /api/v1/dashboard`.
+- Added auth status command and better session handling.
+- Zero telemetry, local memory and provider API key privacy updates.
 
 ## v1.3.0
-- Added `halogent dashboard` command
 
-## v1.2.0
-- `agent dev` verbose mode
+- Introduced self-hosted playground with OpenAI/Anthropic/Gemini provider integration.
+- Added `service install` and `config set-endpoint` commands.
 
-## v1.1.0
-- Service install systemd helper
+## v1.2.0 (legacy)
 
-## v1.0.0
-- Initial release: CLI with auth, agent control, and config
+- Initial core agent lifecycle API and CLI command set.
+- Base Express + PostgreSQL / Drizzle backend with Privy auth.
